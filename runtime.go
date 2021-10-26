@@ -13,8 +13,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/robertkrimen/otto/ast"
-	"github.com/robertkrimen/otto/parser"
+	"github.com/extrame/otto/ast"
+	"github.com/extrame/otto/parser"
 )
 
 type _global struct {
@@ -655,6 +655,10 @@ func (self *_runtime) toValue(value interface{}) Value {
 		// This catch-all is ugly.
 	default:
 		{
+			if iv, ok := value.(GoObjectHandler); ok {
+				return toValue_object(self.newGoHandlerObject(iv))
+			}
+
 			value := reflect.ValueOf(value)
 
 			switch value.Kind() {
@@ -777,6 +781,14 @@ func (runtime *_runtime) newGoSlice(value reflect.Value) *_object {
 func (runtime *_runtime) newGoArray(value reflect.Value) *_object {
 	self := runtime.newGoArrayObject(value)
 	self.prototype = runtime.global.ArrayPrototype
+	return self
+}
+
+func (runtime *_runtime) newGoHandlerObject(value GoObjectHandler) *_object {
+	self := runtime.newObject()
+	self.class = classObject // TODO Should this be something else?
+	self.objectClass = _classGoHandler
+	self.value = _GoHandlerObject{value: value}
 	return self
 }
 

@@ -38,6 +38,7 @@ var (
 	_classGoMap,
 	_classGoArray,
 	_classGoSlice,
+	_classGoHandler,
 	_ *_objectClass
 )
 
@@ -115,6 +116,21 @@ func init() {
 		goStructEnumerate,
 		objectClone,
 		goStructMarshalJSON,
+	}
+
+	_classGoHandler = &_objectClass{
+		goHandlerGetOwnProperty,
+		objectGetProperty,
+		objectGet,
+		goHandlerCanPut,
+		goHandlerPut,
+		objectHasProperty,
+		objectHasOwnProperty,
+		objectDefineOwnProperty,
+		objectDelete,
+		goHandlerEnumerate,
+		objectClone,
+		goHandlerMarshalJSON,
 	}
 
 	_classGoMap = &_objectClass{

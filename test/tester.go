@@ -12,8 +12,8 @@ import (
 	"sync"
 	"text/tabwriter"
 
-	"github.com/robertkrimen/otto"
-	"github.com/robertkrimen/otto/parser"
+	"github.com/extrame/otto"
+	"github.com/extrame/otto/parser"
 )
 
 var flag_test *bool = flag.Bool("test", false, "")
