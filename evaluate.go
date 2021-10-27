@@ -151,8 +151,20 @@ const (
 func calculateLessThan(left Value, right Value, leftFirst bool) LessThanResult {
 	var x, y Value
 
-	if x._object().isCompareAble() {
-		return x._object().compareWith(y._object())
+	if left._object() != nil && left._object().isCompareAble() {
+		var result = left._object().compareWith(right)
+		if !leftFirst && result != LessThanUndefined {
+			result = 1 - result
+		}
+		return result
+	}
+
+	if right._object() != nil && right._object().isCompareAble() {
+		var result = right._object().compareWith(left)
+		if leftFirst && result != LessThanUndefined {
+			result = 1 - result
+		}
+		return result
 	}
 
 	if leftFirst {

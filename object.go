@@ -68,7 +68,7 @@ func (self *_object) isCompareAble() bool {
 	return false
 }
 
-func (self *_object) compareWith(y *_object) LessThanResult {
+func (self *_object) compareWith(y Value) LessThanResult {
 	return self.objectClass.compareWith(self, y)
 }
 

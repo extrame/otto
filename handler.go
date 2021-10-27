@@ -35,9 +35,12 @@ func goHandlerIsCompareAble(self *_object) bool {
 	return false
 }
 
-func goHandlerCompareWith(self *_object, y *_object) LessThanResult {
+func goHandlerCompareWith(self *_object, y Value) LessThanResult {
 	object := self.value.(_GoHandlerObject)
 	if c, ok := object.value.(GoObjectComparable); ok {
+		if y._object() != nil {
+			return c.CompareWith(y._object().value)
+		}
 		return c.CompareWith(y.value)
 	}
 	return LessThanUndefined

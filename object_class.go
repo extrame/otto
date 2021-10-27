@@ -18,7 +18,7 @@ type _objectClass struct {
 	clone             func(*_object, *_object, *_clone) *_object
 	marshalJSON       func(*_object) json.Marshaler
 	isCompareAble     func(*_object) bool
-	compareWith       func(*_object, *_object) LessThanResult
+	compareWith       func(*_object, Value) LessThanResult
 }
 
 func objectEnumerate(self *_object, all bool, each func(string) bool) {
