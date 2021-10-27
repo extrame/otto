@@ -62,7 +62,10 @@ func (self *_object) hasOwnProperty(name string) bool {
 }
 
 func (self *_object) isCompareAble() bool {
-	return self.objectClass.isCompareAble(self)
+	if self.objectClass.isCompareAble != nil {
+		return self.objectClass.isCompareAble(self)
+	}
+	return false
 }
 
 func (self *_object) compareWith(y *_object) LessThanResult {
