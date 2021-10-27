@@ -61,6 +61,14 @@ func (self *_object) hasOwnProperty(name string) bool {
 	return self.objectClass.hasOwnProperty(self, name)
 }
 
+func (self *_object) isCompareAble() bool {
+	return self.objectClass.isCompareAble(self)
+}
+
+func (self *_object) compareWith(y *_object) LessThanResult {
+	return self.objectClass.compareWith(self, y)
+}
+
 type _defaultValueHint int
 
 const (

@@ -140,16 +140,21 @@ func (self *_runtime) calculateBinaryExpression(operator token.Token, left Value
 	panic(hereBeDragons(operator))
 }
 
-type _lessThanResult int
+type LessThanResult int
 
 const (
-	lessThanFalse _lessThanResult = iota
-	lessThanTrue
-	lessThanUndefined
+	LessThanFalse LessThanResult = iota
+	LessThanTrue
+	LessThanUndefined
 )
 
-func calculateLessThan(left Value, right Value, leftFirst bool) _lessThanResult {
+func calculateLessThan(left Value, right Value, leftFirst bool) LessThanResult {
 	var x, y Value
+
+	if x._object().isCompareAble() {
+		return x._object().compareWith(y._object())
+	}
+
 	if leftFirst {
 		x = toNumberPrimitive(left)
 		y = toNumberPrimitive(right)
@@ -162,7 +167,7 @@ func calculateLessThan(left Value, right Value, leftFirst bool) _lessThanResult 
 	if x.kind != valueString || y.kind != valueString {
 		x, y := x.float64(), y.float64()
 		if math.IsNaN(x) || math.IsNaN(y) {
-			return lessThanUndefined
+			return LessThanUndefined
 		}
 		result = x < y
 	} else {
@@ -171,40 +176,40 @@ func calculateLessThan(left Value, right Value, leftFirst bool) _lessThanResult 
 	}
 
 	if result {
-		return lessThanTrue
+		return LessThanTrue
 	}
 
-	return lessThanFalse
+	return LessThanFalse
 }
 
 // FIXME Probably a map is not the most efficient way to do this
-var lessThanTable [4](map[_lessThanResult]bool) = [4](map[_lessThanResult]bool){
+var lessThanTable [4](map[LessThanResult]bool) = [4](map[LessThanResult]bool){
 	// <
-	map[_lessThanResult]bool{
-		lessThanFalse:     false,
-		lessThanTrue:      true,
-		lessThanUndefined: false,
+	map[LessThanResult]bool{
+		LessThanFalse:     false,
+		LessThanTrue:      true,
+		LessThanUndefined: false,
 	},
 
 	// >
-	map[_lessThanResult]bool{
-		lessThanFalse:     false,
-		lessThanTrue:      true,
-		lessThanUndefined: false,
+	map[LessThanResult]bool{
+		LessThanFalse:     false,
+		LessThanTrue:      true,
+		LessThanUndefined: false,
 	},
 
 	// <=
-	map[_lessThanResult]bool{
-		lessThanFalse:     true,
-		lessThanTrue:      false,
-		lessThanUndefined: false,
+	map[LessThanResult]bool{
+		LessThanFalse:     true,
+		LessThanTrue:      false,
+		LessThanUndefined: false,
 	},
 
 	// >=
-	map[_lessThanResult]bool{
-		lessThanFalse:     true,
-		lessThanTrue:      false,
-		lessThanUndefined: false,
+	map[LessThanResult]bool{
+		LessThanFalse:     true,
+		LessThanTrue:      false,
+		LessThanUndefined: false,
 	},
 }
 

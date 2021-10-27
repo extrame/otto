@@ -23,6 +23,26 @@ type _GoHandlerObject struct {
 	value GoObjectHandler
 }
 
+type GoObjectComparable interface {
+	CompareWith(b interface{}) LessThanResult
+}
+
+func goHandlerIsCompareAble(self *_object) bool {
+	object := self.value.(_GoHandlerObject)
+	if _, ok := object.value.(GoObjectComparable); ok {
+		return true
+	}
+	return false
+}
+
+func goHandlerCompareWith(self *_object, y *_object) LessThanResult {
+	object := self.value.(_GoHandlerObject)
+	if c, ok := object.value.(GoObjectComparable); ok {
+		return c.CompareWith(y.value)
+	}
+	return LessThanUndefined
+}
+
 func goHandlerGetOwnProperty(self *_object, name string) *_property {
 	object := self.value.(_GoHandlerObject)
 	value := object.value.GetValue(name)

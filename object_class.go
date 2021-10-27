@@ -17,6 +17,8 @@ type _objectClass struct {
 	enumerate         func(*_object, bool, func(string) bool)
 	clone             func(*_object, *_object, *_clone) *_object
 	marshalJSON       func(*_object) json.Marshaler
+	isCompareAble     func(*_object) bool
+	compareWith       func(*_object, *_object) LessThanResult
 }
 
 func objectEnumerate(self *_object, all bool, each func(string) bool) {
@@ -56,6 +58,8 @@ func init() {
 		objectEnumerate,
 		objectClone,
 		nil,
+		nil,
+		nil,
 	}
 
 	_classArray = &_objectClass{
@@ -70,6 +74,8 @@ func init() {
 		objectDelete,
 		objectEnumerate,
 		objectClone,
+		nil,
+		nil,
 		nil,
 	}
 
@@ -86,6 +92,8 @@ func init() {
 		stringEnumerate,
 		objectClone,
 		nil,
+		nil,
+		nil,
 	}
 
 	_classArguments = &_objectClass{
@@ -100,6 +108,8 @@ func init() {
 		argumentsDelete,
 		objectEnumerate,
 		objectClone,
+		nil,
+		nil,
 		nil,
 	}
 
@@ -116,6 +126,8 @@ func init() {
 		goStructEnumerate,
 		objectClone,
 		goStructMarshalJSON,
+		nil,
+		nil,
 	}
 
 	_classGoHandler = &_objectClass{
@@ -131,6 +143,8 @@ func init() {
 		goHandlerEnumerate,
 		objectClone,
 		goHandlerMarshalJSON,
+		goHandlerIsCompareAble,
+		goHandlerCompareWith,
 	}
 
 	_classGoMap = &_objectClass{
@@ -145,6 +159,8 @@ func init() {
 		goMapDelete,
 		goMapEnumerate,
 		objectClone,
+		nil,
+		nil,
 		nil,
 	}
 
@@ -161,6 +177,8 @@ func init() {
 		goArrayEnumerate,
 		objectClone,
 		nil,
+		nil,
+		nil,
 	}
 
 	_classGoSlice = &_objectClass{
@@ -175,6 +193,8 @@ func init() {
 		goSliceDelete,
 		goSliceEnumerate,
 		objectClone,
+		nil,
+		nil,
 		nil,
 	}
 }
