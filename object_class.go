@@ -17,6 +17,8 @@ type objectClass struct {
 	enumerate         func(*object, bool, func(string) bool)
 	clone             func(*object, *object, *cloner) *object
 	marshalJSON       func(*object) json.Marshaler
+	isCompareAble     func(*object) bool
+	compareWith       func(*object, Value) lessThanResult
 }
 
 func objectEnumerate(obj *object, all bool, each func(string) bool) {
@@ -36,7 +38,8 @@ var classObject,
 	classGoStruct,
 	classGoMap,
 	classGoArray,
-	classGoSlice *objectClass
+	classGoSlice,
+	classGoHandler *objectClass
 
 func init() {
 	classObject = &objectClass{
@@ -51,6 +54,8 @@ func init() {
 		objectDelete,
 		objectEnumerate,
 		objectClone,
+		nil,
+		nil,
 		nil,
 	}
 
@@ -67,6 +72,8 @@ func init() {
 		objectEnumerate,
 		objectClone,
 		nil,
+		nil,
+		nil,
 	}
 
 	classString = &objectClass{
@@ -81,6 +88,8 @@ func init() {
 		objectDelete,
 		stringEnumerate,
 		objectClone,
+		nil,
+		nil,
 		nil,
 	}
 
@@ -97,6 +106,8 @@ func init() {
 		objectEnumerate,
 		objectClone,
 		nil,
+		nil,
+		nil,
 	}
 
 	classGoStruct = &objectClass{
@@ -112,6 +123,25 @@ func init() {
 		goStructEnumerate,
 		objectClone,
 		goStructMarshalJSON,
+		nil,
+		nil,
+	}
+
+	classGoHandler = &objectClass{
+		goHandlerGetOwnProperty,
+		objectGetProperty,
+		objectGet,
+		goHandlerCanPut,
+		goHandlerPut,
+		objectHasProperty,
+		objectHasOwnProperty,
+		objectDefineOwnProperty,
+		objectDelete,
+		goHandlerEnumerate,
+		objectClone,
+		goHandlerMarshalJSON,
+		goHandlerIsCompareAble,
+		goHandlerCompareWith,
 	}
 
 	classGoMap = &objectClass{
@@ -126,6 +156,8 @@ func init() {
 		goMapDelete,
 		goMapEnumerate,
 		objectClone,
+		nil,
+		nil,
 		nil,
 	}
 
@@ -142,6 +174,8 @@ func init() {
 		goArrayEnumerate,
 		objectClone,
 		nil,
+		nil,
+		nil,
 	}
 
 	classGoSlice = &objectClass{
@@ -156,6 +190,8 @@ func init() {
 		goSliceDelete,
 		goSliceEnumerate,
 		objectClone,
+		nil,
+		nil,
 		nil,
 	}
 }

@@ -61,6 +61,17 @@ func (o *object) hasOwnProperty(name string) bool {
 	return o.objectClass.hasOwnProperty(o, name)
 }
 
+func (o *object) isCompareAble() bool {
+	if o.objectClass.isCompareAble != nil {
+		return o.objectClass.isCompareAble(o)
+	}
+	return false
+}
+
+func (o *object) compareWith(y Value) lessThanResult {
+	return o.objectClass.compareWith(o, y)
+}
+
 type defaultValueHint int
 
 const (

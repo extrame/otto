@@ -668,6 +668,11 @@ func (rt *runtime) toValue(value interface{}) Value {
 		// FIXME We should really figure out what can come here.
 		// This catch-all is ugly.
 	default:
+
+		if iv, ok := value.(GoObjectHandler); ok {
+			return objectValue(rt.newGoHandlerObject(iv))
+		}
+
 		val := reflect.ValueOf(value)
 		if ok && val.Kind() == rv.Kind() {
 			// Use passed in rv which may be writable.
@@ -793,6 +798,14 @@ func (rt *runtime) newGoSlice(value reflect.Value) *object {
 func (rt *runtime) newGoArray(value reflect.Value) *object {
 	obj := rt.newGoArrayObject(value)
 	obj.prototype = rt.global.ArrayPrototype
+	return obj
+}
+
+func (runtime *runtime) newGoHandlerObject(value GoObjectHandler) *object {
+	obj := runtime.newObject()
+	obj.class = classObjectName // TODO Should this be something else?
+	obj.objectClass = classGoHandler
+	obj.value = goHandlerObject{value: value}
 	return obj
 }
 

@@ -144,6 +144,23 @@ const (
 
 func calculateLessThan(left Value, right Value, leftFirst bool) lessThanResult {
 	var x, y Value
+
+	if left.object() != nil && left.object().isCompareAble() {
+		var result = left.object().compareWith(right)
+		if !leftFirst && result != lessThanUndefined {
+			result = 1 - result
+		}
+		return result
+	}
+
+	if right.object() != nil && right.object().isCompareAble() {
+		var result = right.object().compareWith(left)
+		if leftFirst && result != lessThanUndefined {
+			result = 1 - result
+		}
+		return result
+	}
+
 	if leftFirst {
 		x = toNumberPrimitive(left)
 		y = toNumberPrimitive(right)

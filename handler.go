@@ -19,68 +19,68 @@ type GoObjectSetter interface {
 type GoObjectExtender interface {
 }
 
-type _GoHandlerObject struct {
+type goHandlerObject struct {
 	value GoObjectHandler
 }
 
 type GoObjectComparable interface {
-	CompareWith(b interface{}) LessThanResult
+	CompareWith(b interface{}) lessThanResult
 }
 
-func goHandlerIsCompareAble(self *_object) bool {
-	object := self.value.(_GoHandlerObject)
+func goHandlerIsCompareAble(self *object) bool {
+	object := self.value.(goHandlerObject)
 	if _, ok := object.value.(GoObjectComparable); ok {
 		return true
 	}
 	return false
 }
 
-func goHandlerCompareWith(self *_object, y Value) LessThanResult {
-	object := self.value.(_GoHandlerObject)
+func goHandlerCompareWith(self *object, y Value) lessThanResult {
+	object := self.value.(goHandlerObject)
 	if c, ok := object.value.(GoObjectComparable); ok {
-		if y._object() != nil {
-			return c.CompareWith(y._object().value)
+		if y.object() != nil {
+			return c.CompareWith(y.object().value)
 		}
 		return c.CompareWith(y.value)
 	}
-	return LessThanUndefined
+	return lessThanUndefined
 }
 
-func goHandlerGetOwnProperty(self *_object, name string) *_property {
-	object := self.value.(_GoHandlerObject)
+func goHandlerGetOwnProperty(self *object, name string) *property {
+	object := self.value.(goHandlerObject)
 	value := object.value.GetValue(name)
 	var rv = reflect.ValueOf(value)
 	if rv.IsValid() {
-		return &_property{self.runtime.toValue(value), 0110}
+		return &property{self.runtime.toValue(value), 0110}
 	}
 
 	return objectGetOwnProperty(self, name)
 }
 
-func goHandlerCanPut(self *_object, name string) bool {
-	object := self.value.(_GoHandlerObject)
+func goHandlerCanPut(self *object, name string) bool {
+	object := self.value.(goHandlerObject)
 	if setter, ok := object.value.(GoObjectSetter); ok {
 		return setter.CanSetValue(name)
 	}
 	return false
 }
 
-func goHandlerPut(self *_object, name string, value Value, throw bool) {
-	object := self.value.(_GoHandlerObject)
+func goHandlerPut(self *object, name string, value Value, throw bool) {
+	object := self.value.(goHandlerObject)
 	if setter, ok := object.value.(GoObjectSetter); ok {
 		setter.SetValue(name, value.value)
 	}
 }
 
-func goHandlerEnumerate(self *_object, all bool, each func(string) bool) {
-	object := self.value.(_GoHandlerObject)
+func goHandlerEnumerate(self *object, all bool, each func(string) bool) {
+	object := self.value.(goHandlerObject)
 	object.value.Enumerate(all, each)
 
 	objectEnumerate(self, all, each)
 }
 
-func goHandlerMarshalJSON(self *_object) json.Marshaler {
-	object := self.value.(*_GoHandlerObject)
+func goHandlerMarshalJSON(self *object) json.Marshaler {
+	object := self.value.(*goHandlerObject)
 	switch marshaler := object.value.(type) {
 	case json.Marshaler:
 		return marshaler

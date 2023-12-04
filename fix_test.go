@@ -25,7 +25,6 @@ func (f *Fixer) Fix(src string, idx file.Idx, tok token.Token) (*parser.Fixture,
 
 func RunJS(code string) error {
 	vm := New()
-	vm.runtime.newArgumentsObject()
 	script, err := vm.Compile("", code)
 	if err != nil {
 		return err

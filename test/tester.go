@@ -92,7 +92,7 @@ func test(filename string) error {
 	}
 
 	if parse {
-		_, err = parser.ParseFile(nil, filename, string(script), parser.IgnoreRegExpErrors)
+		_, err = parser.ParseFile(nil, filename, string(script), nil, parser.IgnoreRegExpErrors)
 		if err != nil {
 			return err
 		}
