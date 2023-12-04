@@ -38,7 +38,7 @@ func (w *walkExample) Exit(n ast.Node) {
 
 func ExampleVisitor_codeRewrite() {
 	source := `var b = function() {test(); try {} catch(e) {} var test = "test(); var test = 1"} // test`
-	program, err := parser.ParseFile(nil, "", source, 0)
+	program, err := parser.ParseFile(nil, "", source, nil, 0)
 	if err != nil {
 		log.Fatal(err)
 	}

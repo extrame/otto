@@ -1,7 +1,10 @@
 package otto
 
 import (
+	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -19,20 +22,16 @@ func TestSourceMapOriginalWithNoSourcemap(t *testing.T) {
 		vm := New()
 
 		s, err := vm.Compile("hello.js", testSourcemapCodeOriginal)
-		if err != nil {
-			panic(err)
-		}
+		require.NoError(t, err)
 
-		if _, err := vm.Run(s); err != nil {
-			panic(err)
-		}
+		_, err = vm.Run(s)
+		require.NoError(t, err)
 
 		_, err = vm.Run(`functionA()`)
-		if err == nil {
-			panic("error should not be nil")
-		}
-
-		is(err.(*Error).String(), testSourcemapOriginalStack)
+		require.Error(t, err)
+		var oerr *Error
+		require.True(t, errors.As(err, &oerr))
+		require.Equal(t, oerr.String(), testSourcemapOriginalStack)
 	})
 }
 
@@ -41,20 +40,16 @@ func TestSourceMapMangledWithNoSourcemap(t *testing.T) {
 		vm := New()
 
 		s, err := vm.Compile("hello.js", testSourcemapCodeMangled)
-		if err != nil {
-			panic(err)
-		}
+		require.NoError(t, err)
 
-		if _, err := vm.Run(s); err != nil {
-			panic(err)
-		}
+		_, err = vm.Run(s)
+		require.NoError(t, err)
 
 		_, err = vm.Run(`functionA()`)
-		if err == nil {
-			panic("error should not be nil")
-		}
-
-		is(err.(*Error).String(), testSourcemapMangledStack)
+		require.Error(t, err)
+		var oerr *Error
+		require.True(t, errors.As(err, &oerr))
+		require.Equal(t, oerr.String(), testSourcemapMangledStack)
 	})
 }
 
@@ -62,21 +57,17 @@ func TestSourceMapMangledWithSourcemap(t *testing.T) {
 	tt(t, func() {
 		vm := New()
 
-		s, err := vm.CompileWithSourceMap("hello.js", testSourcemapCodeMangled, testSourcemapContent)
-		if err != nil {
-			panic(err)
-		}
+		s, err := vm.CompileWithSourceMap("hello.js", testSourcemapCodeMangled, testSourcemapContent, nil)
+		require.NoError(t, err)
 
-		if _, err := vm.Run(s); err != nil {
-			panic(err)
-		}
+		_, err = vm.Run(s)
+		require.NoError(t, err)
 
 		_, err = vm.Run(`functionA()`)
-		if err == nil {
-			panic("error should not be nil")
-		}
-
-		is(err.(*Error).String(), testSourcemapMappedStack)
+		require.Error(t, err)
+		var oerr *Error
+		require.True(t, errors.As(err, &oerr))
+		require.Equal(t, oerr.String(), testSourcemapMappedStack)
 	})
 }
 
@@ -84,21 +75,17 @@ func TestSourceMapMangledWithInlineSourcemap(t *testing.T) {
 	tt(t, func() {
 		vm := New()
 
-		s, err := vm.CompileWithSourceMap("hello.js", testSourcemapInline, nil)
-		if err != nil {
-			panic(err)
-		}
+		s, err := vm.CompileWithSourceMap("hello.js", testSourcemapInline, nil, nil)
+		require.NoError(t, err)
 
-		if _, err := vm.Run(s); err != nil {
-			panic(err)
-		}
+		_, err = vm.Run(s)
+		require.NoError(t, err)
 
 		_, err = vm.Run(`functionA()`)
-		if err == nil {
-			panic("error should not be nil")
-		}
-
-		is(err.(*Error).String(), testSourcemapMappedStack)
+		require.Error(t, err)
+		var oerr *Error
+		require.True(t, errors.As(err, &oerr))
+		require.Equal(t, oerr.String(), testSourcemapMappedStack)
 	})
 }
 
@@ -106,16 +93,13 @@ func TestSourceMapContextPosition(t *testing.T) {
 	tt(t, func() {
 		vm := New()
 
-		s, err := vm.CompileWithSourceMap("hello.js", testSourcemapCodeMangled, testSourcemapContent)
-		if err != nil {
-			panic(err)
-		}
+		s, err := vm.CompileWithSourceMap("hello.js", testSourcemapCodeMangled, testSourcemapContent, nil)
+		require.NoError(t, err)
 
-		if _, err := vm.Run(s); err != nil {
-			panic(err)
-		}
+		_, err = vm.Run(s)
+		require.NoError(t, err)
 
-		vm.Set("functionExternal", func(c FunctionCall) Value {
+		err = vm.Set("functionExternal", func(c FunctionCall) Value {
 			ctx := c.Otto.Context()
 
 			is(ctx.Filename, "hello.js")
@@ -124,10 +108,10 @@ func TestSourceMapContextPosition(t *testing.T) {
 
 			return UndefinedValue()
 		})
+		require.NoError(t, err)
 
-		if _, err := vm.Run(`functionA()`); err != nil {
-			panic(err)
-		}
+		_, err = vm.Run(`functionA()`)
+		require.NoError(t, err)
 	})
 }
 
@@ -135,16 +119,13 @@ func TestSourceMapContextStacktrace(t *testing.T) {
 	tt(t, func() {
 		vm := New()
 
-		s, err := vm.CompileWithSourceMap("hello.js", testSourcemapCodeMangled, testSourcemapContent)
-		if err != nil {
-			panic(err)
-		}
+		s, err := vm.CompileWithSourceMap("hello.js", testSourcemapCodeMangled, testSourcemapContent, nil)
+		require.NoError(t, err)
 
-		if _, err := vm.Run(s); err != nil {
-			panic(err)
-		}
+		_, err = vm.Run(s)
+		require.NoError(t, err)
 
-		vm.Set("functionExternal", func(c FunctionCall) Value {
+		err = vm.Set("functionExternal", func(c FunctionCall) Value {
 			ctx := c.Otto.Context()
 
 			is(ctx.Stacktrace, []string{
@@ -155,9 +136,9 @@ func TestSourceMapContextStacktrace(t *testing.T) {
 
 			return UndefinedValue()
 		})
+		require.NoError(t, err)
 
-		if _, err := vm.Run(`functionA()`); err != nil {
-			panic(err)
-		}
+		_, err = vm.Run(`functionA()`)
+		require.NoError(t, err)
 	})
 }

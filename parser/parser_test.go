@@ -9,27 +9,27 @@ import (
 	"github.com/extrame/otto/ast"
 	"github.com/extrame/otto/file"
 	"github.com/extrame/otto/underscore"
+	"github.com/stretchr/testify/require"
 )
 
 func firstErr(err error) error {
-	switch err := err.(type) {
-	case ErrorList:
-		return err[0]
+	var lerr *ErrorList
+	if errors.As(err, &lerr) {
+		return (*lerr)[0]
 	}
 	return err
 }
 
 var matchBeforeAfterSeparator = regexp.MustCompile(`(?m)^[ \t]*---$`)
 
-func testParse(src string) (parser *_parser, program *ast.Program, err error) {
+func testParse(src string) (*parser, *ast.Program, error) {
 	return testParseWithMode(src, 0)
 }
 
-func testParseWithMode(src string, mode Mode) (parser *_parser, program *ast.Program, err error) {
+func testParseWithMode(src string, mode Mode) (parser *parser, program *ast.Program, err error) { //nolint: nonamedreturns
 	defer func() {
 		if tmp := recover(); tmp != nil {
-			switch tmp := tmp.(type) {
-			case string:
+			if tmp, ok := tmp.(string); ok {
 				if strings.HasPrefix(tmp, "SyntaxError:") {
 					parser = nil
 					program = nil
@@ -40,27 +40,27 @@ func testParseWithMode(src string, mode Mode) (parser *_parser, program *ast.Pro
 			panic(tmp)
 		}
 	}()
-	parser = _newParser("", src, 1, nil)
+	parser = newParser("", src, 1, nil)
 	parser.mode = mode
 	program, err = parser.parse()
-	return
+	return parser, program, err
 }
 
 func TestParseFile(t *testing.T) {
 	tt(t, func() {
-		_, err := ParseFile(nil, "", `/abc/`, 0)
+		_, err := ParseFile(nil, "", `/abc/`, nil, 0)
 		is(err, nil)
 
-		_, err = ParseFile(nil, "", `/(?!def)abc/`, IgnoreRegExpErrors)
+		_, err = ParseFile(nil, "", `/(?!def)abc/`, nil, IgnoreRegExpErrors)
 		is(err, nil)
 
-		_, err = ParseFile(nil, "", `/(?!def)abc/`, 0)
+		_, err = ParseFile(nil, "", `/(?!def)abc/`, nil, 0)
 		is(err, "(anonymous): Line 1:1 Invalid regular expression: re2: Invalid (?!) <lookahead>")
 
-		_, err = ParseFile(nil, "", `/(?!def)abc/; return`, IgnoreRegExpErrors)
+		_, err = ParseFile(nil, "", `/(?!def)abc/; return`, nil, IgnoreRegExpErrors)
 		is(err, "(anonymous): Line 1:15 Illegal return statement")
 
-		_, err = ParseFile(nil, "/make-sure-file-path-is-returned-not-anonymous", `a..`, 0)
+		_, err = ParseFile(nil, "/make-sure-file-path-is-returned-not-anonymous", `a..`, nil, 0)
 		is(err, "/make-sure-file-path-is-returned-not-anonymous: Line 1:3 Unexpected token .")
 	})
 }
@@ -91,8 +91,8 @@ func TestParseFunction(t *testing.T) {
 
 func TestParserErr(t *testing.T) {
 	tt(t, func() {
-		test := func(input string, expect interface{}) (*ast.Program, *_parser) {
-			parser := _newParser("", input, 1, nil)
+		test := func(input string, expect interface{}) (*ast.Program, *parser) {
+			parser := newParser("", input, 1, nil)
 			program, err := parser.parse()
 			is(firstErr(err), expect)
 			return program, parser
@@ -162,17 +162,17 @@ func TestParserErr(t *testing.T) {
 
 		test("var x = /(s/g", "(anonymous): Line 1:9 Invalid regular expression: Unterminated group")
 
-		test("0 = 1", "(anonymous): Line 1:1 Invalid left-hand side in assignment")
+		test("0 = 1", "(anonymous): Line 1:1 invalid left-hand side in assignment")
 
-		test("func() = 1", "(anonymous): Line 1:1 Invalid left-hand side in assignment")
+		test("func() = 1", "(anonymous): Line 1:1 invalid left-hand side in assignment")
 
-		test("(1 + 1) = 2", "(anonymous): Line 1:2 Invalid left-hand side in assignment")
+		test("(1 + 1) = 2", "(anonymous): Line 1:2 invalid left-hand side in assignment")
 
-		test("1++", "(anonymous): Line 1:2 Invalid left-hand side in assignment")
+		test("1++", "(anonymous): Line 1:2 invalid left-hand side in assignment")
 
-		test("1--", "(anonymous): Line 1:2 Invalid left-hand side in assignment")
+		test("1--", "(anonymous): Line 1:2 invalid left-hand side in assignment")
 
-		test("--1", "(anonymous): Line 1:1 Invalid left-hand side in assignment")
+		test("--1", "(anonymous): Line 1:1 invalid left-hand side in assignment")
 
 		test("for((1 + 1) in abc) def();", "(anonymous): Line 1:1 Invalid left-hand side in for-in")
 
@@ -192,9 +192,9 @@ func TestParserErr(t *testing.T) {
 
 		test("var if = 0", "(anonymous): Line 1:5 Unexpected token if")
 
-		test("abc + 0 = 1", "(anonymous): Line 1:1 Invalid left-hand side in assignment")
+		test("abc + 0 = 1", "(anonymous): Line 1:1 invalid left-hand side in assignment")
 
-		test("+abc = 1", "(anonymous): Line 1:1 Invalid left-hand side in assignment")
+		test("+abc = 1", "(anonymous): Line 1:1 invalid left-hand side in assignment")
 
 		test("1 + (", "(anonymous): Line 1:6 Unexpected end of input")
 
@@ -203,19 +203,19 @@ func TestParserErr(t *testing.T) {
 		test("\n/* Some multiline\ncomment */\n)", "(anonymous): Line 4:1 Unexpected token )")
 
 		// TODO
-		//{ set 1 }
-		//{ get 2 }
-		//({ set: s(if) { } })
-		//({ set s(.) { } })
-		//({ set: s() { } })
-		//({ set: s(a, b) { } })
-		//({ get: g(d) { } })
-		//({ get i() { }, i: 42 })
-		//({ i: 42, get i() { } })
-		//({ set i(x) { }, i: 42 })
-		//({ i: 42, set i(x) { } })
-		//({ get i() { }, get i() { } })
-		//({ set i(x) { }, set i(x) { } })
+		// { set 1 }
+		// { get 2 }
+		// ({ set: s(if) { } })
+		// ({ set s(.) { } })
+		// ({ set: s() { } })
+		// ({ set: s(a, b) { } })
+		// ({ get: g(d) { } })
+		// ({ get i() { }, i: 42 })
+		// ({ i: 42, get i() { } })
+		// ({ set i(x) { }, i: 42 })
+		// ({ i: 42, set i(x) { } })
+		// ({ get i() { }, get i() { } })
+		// ({ set i(x) { }, set i(x) { } })
 
 		test("function abc(if) {}", "(anonymous): Line 1:14 Unexpected token if")
 
@@ -425,7 +425,6 @@ func TestParserErr(t *testing.T) {
 		}
 
 		{ // Reserved words
-
 			test("class", "(anonymous): Line 1:1 Unexpected reserved word")
 			test("abc.class = 1", nil)
 			test("var class;", "(anonymous): Line 1:5 Unexpected reserved word")
@@ -456,7 +455,6 @@ func TestParserErr(t *testing.T) {
 		}
 
 		{ // Reserved words (strict)
-
 			test(`implements`, nil)
 			test(`abc.implements = 1`, nil)
 			test(`var implements;`, nil)
@@ -508,7 +506,7 @@ func TestParser(t *testing.T) {
             abc
             --
             []
-        `, "(anonymous): Line 3:13 Invalid left-hand side in assignment")
+        `, "(anonymous): Line 3:13 invalid left-hand side in assignment")
 
 		test(`
             abc--
@@ -618,6 +616,8 @@ func TestParser(t *testing.T) {
                 } while (0)
             } while (0)
         `, nil)
+
+		test(`do do; while(0); while(0);`, nil)
 
 		test(`
             (function(){
@@ -779,7 +779,7 @@ func TestParser(t *testing.T) {
 		test("'\\\r\n'", nil)
 
 		//// 11.13.1-1-1
-		test("42 = 42;", "(anonymous): Line 1:1 Invalid left-hand side in assignment")
+		test("42 = 42;", "(anonymous): Line 1:1 invalid left-hand side in assignment")
 
 		// S11.13.2_A4.2_T1.3
 		test(`
@@ -968,7 +968,7 @@ func Test_parseNumberLiteral(t *testing.T) {
 
 func TestPosition(t *testing.T) {
 	tt(t, func() {
-		parser := _newParser("", "// Lorem ipsum", 1, nil)
+		parser := newParser("", "// Lorem ipsum", 1, nil)
 
 		// Out of range, idx0 (error condition)
 		is(parser.slice(0, 1), "")
@@ -986,7 +986,7 @@ func TestPosition(t *testing.T) {
 		is(parser.str[0:14], "// Lorem ipsum")
 		is(parser.slice(1, 15), "// Lorem ipsum")
 
-		parser = _newParser("", "(function(){ return 0; })", 1, nil)
+		parser = newParser("", "(function(){ return 0; })", 1, nil)
 		program, err := parser.parse()
 		is(err, nil)
 
@@ -1004,27 +1004,206 @@ func TestPosition(t *testing.T) {
 		is(node.Idx1(), file.Idx(25))
 		is(parser.slice(node.Idx0(), node.Idx1()), "function(){ return 0; }")
 
-		parser = _newParser("", "(function(){ return abc; })", 1, nil)
+		parser = newParser("", "(function(){ return abc; })", 1, nil)
 		program, err = parser.parse()
 		is(err, nil)
 		node = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral)
 		is(node.(*ast.FunctionLiteral).Source, "function(){ return abc; }")
 
-		parser = _newParser("", "this.style", 1, nil)
+		parser = newParser("", "this.style", 1, nil)
 		program, err = parser.parse()
 		is(err, nil)
 		node = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.DotExpression).Left.(*ast.ThisExpression)
 		is(node.Idx0(), file.Idx(1))
 		is(node.Idx1(), file.Idx(5))
 
-		parser = _newParser("", "(function(){ if (abc) { throw 'failed'; } })", 1, nil)
+		parser = newParser("", "(function(){ if (abc) { throw 'failed'; } })", 1, nil)
 		program, err = parser.parse()
 		is(err, nil)
 		block := program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
 		node = block.List[0].(*ast.IfStatement)
-		is(node.Idx0(), 21)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "if (abc) { throw 'failed'; }")
 		node = node.(*ast.IfStatement).Consequent.(*ast.BlockStatement).List[0].(*ast.ThrowStatement)
-		is(node.Idx0(), 39)
+		is(node.Idx0(), 25)
+		is(parser.slice(node.Idx0(), node.Idx1()), "throw 'failed'")
+
+		parser = newParser("", "(function(){ for (x=1; x<=4; x++) { console.log(x); } })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.ForStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "for (x=1; x<=4; x++) { console.log(x); }")
+
+		parser = newParser("", "(function(){ for (p in o) { console.log(p); } })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.ForInStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "for (p in o) { console.log(p); }")
+
+		parser = newParser("", "x = {x: 1}", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		node = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.ObjectLiteral)
+		is(node.Idx0(), 5)
+		is(parser.slice(node.Idx0(), node.Idx1()), "{x: 1}")
+
+		parser = newParser("", "x = [1, 2]", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		node = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.ArrayLiteral)
+		is(node.Idx0(), 5)
+		is(parser.slice(node.Idx0(), node.Idx1()), "[1, 2]")
+
+		parser = newParser("", "x = true ? 1 : 2", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		node = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.ConditionalExpression)
+		is(node.Idx0(), 5)
+		is(parser.slice(node.Idx0(), node.Idx1()), "true ? 1 : 2")
+
+		parser = newParser("", "(function(){ x = 1, y = 2; })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.ExpressionStatement).Expression.(*ast.SequenceExpression)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "x = 1, y = 2")
+
+		parser = newParser("", "x = ~x", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		node = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.UnaryExpression)
+		is(node.Idx0(), 5)
+		is(parser.slice(node.Idx0(), node.Idx1()), "~x")
+
+		parser = newParser("", "(function(){ xyz++; })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.ExpressionStatement).Expression.(*ast.UnaryExpression)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "xyz++")
+
+		parser = newParser("", "(function(){ var abc, xyz = 1; })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.VariableStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "var abc, xyz = 1")
+		node = block.List[0].(*ast.VariableStatement).List[0].(*ast.VariableExpression)
+		is(node.Idx0(), 18)
+		is(parser.slice(node.Idx0(), node.Idx1()), "abc")
+		node = block.List[0].(*ast.VariableStatement).List[1].(*ast.VariableExpression)
+		is(node.Idx0(), 23)
+		is(parser.slice(node.Idx0(), node.Idx1()), "xyz = 1")
+
+		parser = newParser("", "for (i = 0; i < 10; i++) { if (i == 5) break; }", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ForStatement).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.IfStatement).Consequent.(*ast.BranchStatement)
+		is(node.Idx0(), 40)
+		is(parser.slice(node.Idx0(), node.Idx1()), "break")
+
+		parser = newParser("", "(function(){ xyz: for (i = 0; i < 10; i++) { if (i == 5) continue xyz; } })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.LabelledStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "xyz: for (i = 0; i < 10; i++) { if (i == 5) continue xyz; }")
+		block = node.(*ast.LabelledStatement).Statement.(*ast.ForStatement).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.IfStatement).Consequent.(*ast.BranchStatement)
+		is(node.Idx0(), 58)
+		is(parser.slice(node.Idx0(), node.Idx1()), "continue xyz")
+
+		parser = newParser("", "(function(){ return; })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.ReturnStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "return")
+
+		parser = newParser("", "(function(){ return 10; })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.ReturnStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "return 10")
+
+		parser = newParser("", "(function(){ switch (a) { default: return; }})", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.SwitchStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "switch (a) { default: return; }")
+
+		parser = newParser("", "(function(){ try { a(); } catch (error) { b(); } })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.TryStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "try { a(); } catch (error) { b(); }")
+		node = block.List[0].(*ast.TryStatement).Catch
+		is(node.Idx0(), 27)
+		is(parser.slice(node.Idx0(), node.Idx1()), "catch (error) { b(); }")
+
+		parser = newParser("", "(function(){ try { a(); } catch (error) { b(); } finally { c(); } })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.TryStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "try { a(); } catch (error) { b(); } finally { c(); }")
+
+		parser = newParser("", "(function(){ with (1) {} })", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		node = block.List[0].(*ast.WithStatement)
+		is(node.Idx0(), 14)
+		is(parser.slice(node.Idx0(), node.Idx1()), "with (1) {}")
+
+		parser = newParser("", "while (i < 10) { i++; }", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		node = program.Body[0].(*ast.WhileStatement)
+		is(node.Idx0(), 1)
+		is(parser.slice(node.Idx0(), node.Idx1()), "while (i < 10) { i++; }")
+
+		parser = newParser("", "do { i++; } while (i < 10 )", 1, nil)
+		program, err = parser.parse()
+		is(err, nil)
+		node = program.Body[0].(*ast.DoWhileStatement)
+		is(node.Idx0(), 1)
+		is(parser.slice(node.Idx0(), node.Idx1()), "do { i++; } while (i < 10 )")
+
+		parser = newParser("", "(function() { // single-line comment\n })", 1, nil)
+		parser.mode |= StoreComments
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		comment := parser.comments.CommentMap[block][0]
+		is(comment.Begin, 15)
+		is(parser.slice(comment.Begin, file.Idx(int(comment.Begin)+len(comment.Text)+2)), "// single-line comment")
+
+		parser = newParser("", "(function() { /* multi-line comment */ })", 1, nil)
+		parser.mode |= StoreComments
+		program, err = parser.parse()
+		is(err, nil)
+		block = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.FunctionLiteral).Body.(*ast.BlockStatement)
+		comment = parser.comments.CommentMap[block][0]
+		is(comment.Begin, 15)
+		is(parser.slice(comment.Begin, file.Idx(int(comment.Begin)+len(comment.Text)+4)), "/* multi-line comment */")
 	})
 }
 
@@ -1033,7 +1212,8 @@ func BenchmarkParser(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		parser := _newParser("", src, 1, nil)
-		parser.parse()
+		parser := newParser("", src, 1, nil)
+		_, err := parser.parse()
+		require.NoError(b, err)
 	}
 }
