@@ -113,3 +113,19 @@ func (s *Script) unmarshalBinary(data []byte) (err error) { //nolint: nonamedret
 	}
 	return decoder.Decode(&s.src)
 }
+
+func (s *Script) GetFunction(n int) *FunctionLiteral {
+	if s.program == nil {
+		return nil
+	}
+	if s.program.body == nil {
+		return nil
+	}
+	if len(s.program.functionList) <= n {
+		return nil
+	}
+	if s.program.functionList[n] == nil {
+		return nil
+	}
+	return s.program.functionList[n]
+}

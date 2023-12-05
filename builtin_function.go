@@ -46,7 +46,7 @@ func builtinNewFunctionNative(rt *runtime, argumentList []Value) *object {
 	cmpl := compiler{}
 	cmplFunction := cmpl.parseExpression(function)
 
-	return rt.newNodeFunction(cmplFunction.(*nodeFunctionLiteral), rt.globalStash)
+	return rt.newNodeFunction(cmplFunction.(*FunctionLiteral), rt.globalStash)
 }
 
 func builtinFunctionToString(call FunctionCall) Value {

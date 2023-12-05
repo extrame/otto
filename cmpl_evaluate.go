@@ -15,7 +15,7 @@ func (rt *runtime) cmplEvaluateNodeProgram(node *nodeProgram, eval bool) Value {
 	return rt.cmplEvaluateNodeStatementList(node.body)
 }
 
-func (rt *runtime) cmplCallNodeFunction(function *object, stash *fnStash, node *nodeFunctionLiteral, argumentList []Value) Value {
+func (rt *runtime) cmplCallNodeFunction(function *object, stash *fnStash, node *FunctionLiteral, argumentList []Value) Value {
 	indexOfParameterName := make([]string, len(argumentList))
 	// function(abc, def, ghi)
 	// indexOfParameterName[0] = "abc"
@@ -63,7 +63,7 @@ func (rt *runtime) cmplCallNodeFunction(function *object, stash *fnStash, node *
 	return Value{}
 }
 
-func (rt *runtime) cmplFunctionDeclaration(list []*nodeFunctionLiteral) {
+func (rt *runtime) cmplFunctionDeclaration(list []*FunctionLiteral) {
 	executionContext := rt.scope
 	eval := executionContext.eval
 	stash := executionContext.variable

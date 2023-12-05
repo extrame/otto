@@ -90,7 +90,7 @@ func (cmpl *compiler) parseExpression(expr ast.Expression) nodeExpression {
 		if expr.Name != nil {
 			name = expr.Name.Name
 		}
-		out := &nodeFunctionLiteral{
+		out := &FunctionLiteral{
 			name:   name,
 			body:   cmpl.parseStatement(expr.Body),
 			source: expr.Source,
@@ -106,7 +106,7 @@ func (cmpl *compiler) parseExpression(expr ast.Expression) nodeExpression {
 		for _, value := range expr.DeclarationList {
 			switch value := value.(type) {
 			case *ast.FunctionDeclaration:
-				out.functionList = append(out.functionList, cmpl.parseExpression(value.Function).(*nodeFunctionLiteral))
+				out.functionList = append(out.functionList, cmpl.parseExpression(value.Function).(*FunctionLiteral))
 			case *ast.VariableDeclaration:
 				for _, value := range value.List {
 					out.varList = append(out.varList, value.Name)
@@ -378,7 +378,7 @@ func (cmpl *compiler) parse() *nodeProgram {
 	for _, value := range cmpl.program.DeclarationList {
 		switch value := value.(type) {
 		case *ast.FunctionDeclaration:
-			out.functionList = append(out.functionList, cmpl.parseExpression(value.Function).(*nodeFunctionLiteral))
+			out.functionList = append(out.functionList, cmpl.parseExpression(value.Function).(*FunctionLiteral))
 		case *ast.VariableDeclaration:
 			for _, value := range value.List {
 				out.varList = append(out.varList, value.Name)
@@ -394,7 +394,7 @@ type nodeProgram struct {
 	body []nodeStatement
 
 	varList      []string
-	functionList []*nodeFunctionLiteral
+	functionList []*FunctionLiteral
 
 	file *file.File
 }
@@ -447,13 +447,13 @@ type (
 		identifier string
 	}
 
-	nodeFunctionLiteral struct {
+	FunctionLiteral struct {
 		name          string
 		body          nodeStatement
 		source        string
 		parameterList []string
 		varList       []string
-		functionList  []*nodeFunctionLiteral
+		functionList  []*FunctionLiteral
 		file          *file.File
 	}
 
@@ -610,7 +610,7 @@ func (*nodeBracketExpression) expressionNode()     {}
 func (*nodeCallExpression) expressionNode()        {}
 func (*nodeConditionalExpression) expressionNode() {}
 func (*nodeDotExpression) expressionNode()         {}
-func (*nodeFunctionLiteral) expressionNode()       {}
+func (*FunctionLiteral) expressionNode()           {}
 func (*nodeIdentifier) expressionNode()            {}
 func (*nodeLiteral) expressionNode()               {}
 func (*nodeNewExpression) expressionNode()         {}

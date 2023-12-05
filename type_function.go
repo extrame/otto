@@ -114,11 +114,11 @@ func (fn bindFunctionObject) construct(argumentList []Value) Value {
 
 // nodeFunctionObject.
 type nodeFunctionObject struct {
-	node  *nodeFunctionLiteral
+	node  *FunctionLiteral
 	stash stasher
 }
 
-func (rt *runtime) newNodeFunctionObject(node *nodeFunctionLiteral, stash stasher) *object {
+func (rt *runtime) newNodeFunctionObject(node *FunctionLiteral, stash stasher) *object {
 	o := rt.newClassObject(classFunctionName)
 	o.value = nodeFunctionObject{
 		node:  node,

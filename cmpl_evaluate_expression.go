@@ -47,7 +47,7 @@ func (rt *runtime) cmplEvaluateNodeExpression(node nodeExpression) Value {
 	case *nodeDotExpression:
 		return rt.cmplEvaluateNodeDotExpression(node)
 
-	case *nodeFunctionLiteral:
+	case *FunctionLiteral:
 		local := rt.scope.lexical
 		if node.name != "" {
 			local = rt.newDeclarationStash(local)
@@ -305,13 +305,13 @@ func (rt *runtime) cmplEvaluateNodeObjectLiteral(node *nodeObjectLiteral) Value 
 		case "value":
 			result.defineProperty(prop.key, rt.cmplEvaluateNodeExpression(prop.value).resolve(), 0o111, false)
 		case "get":
-			getter := rt.newNodeFunction(prop.value.(*nodeFunctionLiteral), rt.scope.lexical)
+			getter := rt.newNodeFunction(prop.value.(*FunctionLiteral), rt.scope.lexical)
 			descriptor := property{}
 			descriptor.mode = 0o211
 			descriptor.value = propertyGetSet{getter, nil}
 			result.defineOwnProperty(prop.key, descriptor, false)
 		case "set":
-			setter := rt.newNodeFunction(prop.value.(*nodeFunctionLiteral), rt.scope.lexical)
+			setter := rt.newNodeFunction(prop.value.(*FunctionLiteral), rt.scope.lexical)
 			descriptor := property{}
 			descriptor.mode = 0o211
 			descriptor.value = propertyGetSet{nil, setter}

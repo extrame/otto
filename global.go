@@ -196,7 +196,7 @@ func (rt *runtime) newNativeFunction(name, file string, line int, fn nativeFunct
 	return o
 }
 
-func (rt *runtime) newNodeFunction(node *nodeFunctionLiteral, scopeEnvironment stasher) *object {
+func (rt *runtime) newNodeFunction(node *FunctionLiteral, scopeEnvironment stasher) *object {
 	// TODO Implement 13.2 fully
 	o := rt.newNodeFunctionObject(node, scopeEnvironment)
 	o.prototype = rt.global.FunctionPrototype

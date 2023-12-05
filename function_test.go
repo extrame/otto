@@ -343,3 +343,25 @@ func TestFunction_caller(t *testing.T) {
         `, true)
 	})
 }
+
+func TestGetCallScript(t *testing.T) {
+	var script1 = `function login() { console.log(1) }`
+	var vm = New()
+
+	scr, err := vm.Compile("", script1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var fn = scr.GetFunction(0)
+
+	var call = fn.CallScript()
+
+	if call != "login()" {
+		t.Fatal("call script error")
+	}
+
+	vm.Run(scr)
+	vm.Run(call)
+
+}
