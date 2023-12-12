@@ -525,6 +525,31 @@ func (p *parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 		if p.mode&StoreComments != 0 {
 			p.comments.CommentMap.AddComments(left, newComments, ast.LEADING)
 		}
+	} else if p.token == token.LEFT_PARENTHESIS {
+		var chrOffset = p.chrOffset
+		var lastChrOffset = p.lastChrOffset
+		var idx = p.idx
+		for {
+			if p.token == token.RIGHT_PARENTHESIS {
+				break
+			}
+			p.next()
+		}
+		p.next()
+		var isAnonymousMarker = p.token == token.ANNOYMOUS_FUNCTION_MARKKER
+		p.chrOffset = lastChrOffset
+		p.offset = chrOffset
+		p.read()
+		p.next()
+		if isAnonymousMarker {
+			p.parseAnonymousFunction(idx)
+		} else {
+			if p.mode&StoreComments != 0 {
+				p.comments.MarkComments(ast.LEADING)
+				p.comments.MarkPrimary()
+			}
+			left = p.parsePrimaryExpression()
+		}
 	} else {
 		if p.mode&StoreComments != 0 {
 			p.comments.MarkComments(ast.LEADING)

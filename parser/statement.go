@@ -2,6 +2,7 @@ package parser
 
 import (
 	"github.com/extrame/otto/ast"
+	"github.com/extrame/otto/file"
 	"github.com/extrame/otto/token"
 )
 
@@ -211,8 +212,13 @@ func (p *parser) parseTryStatement() ast.Statement {
 	return node
 }
 
-func (p *parser) parseFunctionParameterList() *ast.ParameterList {
-	opening := p.expect(token.LEFT_PARENTHESIS)
+func (p *parser) parseFunctionParameterList(openings ...file.Idx) *ast.ParameterList {
+	var opening file.Idx
+	if len(openings) > 0 {
+		opening = openings[0]
+	} else {
+		opening = p.expect(token.LEFT_PARENTHESIS)
+	}
 	if p.mode&StoreComments != 0 {
 		p.comments.Unset()
 	}
@@ -280,6 +286,20 @@ func (p *parser) parseFunction(declaration bool) *ast.FunctionLiteral {
 	p.parseFunctionBlock(node)
 	node.Source = p.slice(node.Idx0(), node.Idx1())
 
+	return node
+}
+
+func (p *parser) parseAnonymousFunction(idx file.Idx) *ast.FunctionLiteral {
+	node := &ast.FunctionLiteral{
+		Function: idx,
+	}
+
+	// node.Name = name
+	node.ParameterList = p.parseFunctionParameterList(idx)
+	p.next()
+	p.parseFunctionBlock(node)
+	node.Source = p.slice(node.Idx0(), node.Idx1())
+	node.Anonyous = true
 	return node
 }
 

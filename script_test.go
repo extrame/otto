@@ -96,3 +96,11 @@ func TestFunctionCall_CallerLocation(t *testing.T) {
 		is(where, "somefile.js:1:13")
 	})
 }
+
+func TestCompileFunctionDefinition(t *testing.T) {
+	tt(t, func() {
+		vm := New()
+		script, _ := vm.Compile("", `function foo() { return 42; }`)
+		is(script.IsFunctionDefinition(), true)
+	})
+}

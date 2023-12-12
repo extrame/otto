@@ -12,3 +12,7 @@ func (f *FunctionLiteral) String() string {
 func (f *FunctionLiteral) CallScript() string {
 	return fmt.Sprintf("%s(%s)", f.name, strings.Join(f.parameterList, ", "))
 }
+
+func (f *FunctionLiteral) Name() string {
+	return f.name
+}

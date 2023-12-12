@@ -224,12 +224,12 @@ func (*EmptyExpression) expression() {}
 
 // FunctionLiteral represents a function literal.
 type FunctionLiteral struct {
-	Function      file.Idx
-	Name          *Identifier
-	ParameterList *ParameterList
-	Body          Statement
-	Source        string
-
+	Function        file.Idx
+	Name            *Identifier
+	ParameterList   *ParameterList
+	Body            Statement
+	Source          string
+	Anonyous        bool
 	DeclarationList []Declaration
 }
 

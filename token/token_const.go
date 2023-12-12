@@ -111,6 +111,8 @@ const (
 	DEBUGGER
 	// Instance of.
 	INSTANCEOF
+	// Anonyous functions.
+	ANNOYMOUS_FUNCTION_MARKKER // =>
 )
 
 var token2string = [...]string{
@@ -199,6 +201,7 @@ var token2string = [...]string{
 	CONTINUE:                    "continue",
 	DEBUGGER:                    "debugger",
 	INSTANCEOF:                  "instanceof",
+	ANNOYMOUS_FUNCTION_MARKKER:                  "=>",
 }
 
 var keywordTable = map[string]keyword{

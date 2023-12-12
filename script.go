@@ -114,6 +114,7 @@ func (s *Script) unmarshalBinary(data []byte) (err error) { //nolint: nonamedret
 	return decoder.Decode(&s.src)
 }
 
+// GetFunction returns the function literal at the given index.
 func (s *Script) GetFunction(n int) *FunctionLiteral {
 	if s.program == nil {
 		return nil
@@ -128,4 +129,25 @@ func (s *Script) GetFunction(n int) *FunctionLiteral {
 		return nil
 	}
 	return s.program.functionList[n]
+}
+
+// IsSingleFunctionDefinition returns true if the script is a single function definition.
+func (s *Script) IsSingleFunctionDefinition() bool {
+	if s.program == nil {
+		return false
+	}
+	if s.program.body == nil {
+		return false
+	}
+	if len(s.program.functionList) != 1 {
+		return false
+	}
+	var node = s.program.body[0]
+	if _, ok := node.(*nodeEmptyStatement); !ok {
+		return false
+	}
+	if len(s.program.functionList) != 1 {
+		return false
+	}
+	return true
 }
