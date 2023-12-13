@@ -100,7 +100,36 @@ func TestFunctionCall_CallerLocation(t *testing.T) {
 func TestCompileFunctionDefinition(t *testing.T) {
 	tt(t, func() {
 		vm := New()
-		script, _ := vm.Compile("", `function foo() { return 42; }`)
-		is(script.IsFunctionDefinition(), true)
+		script, _ := vm.Compile("", `function foo() { return this.a; }`)
+		is(script.IsSingleFunctionDefinition(), true)
+		var fn = script.GetFunction(0)
+		vm.Set("obj", &Tester{
+			script: fn,
+		})
+		val, err := vm.Run(`obj.foo()`)
+		require.NoError(t, err)
+		is(val, 1)
 	})
+}
+
+type Tester struct {
+	script *FunctionLiteral
+}
+
+func (r *Tester) GetValue(name string) interface{} {
+	if name == "foo" {
+		return func(fc FunctionCall) Value {
+			return r.script.Call(&fc)
+		}
+	} else {
+		return 1
+	}
+}
+
+func (r *Tester) GetProperty(name string) (interface{}, bool) {
+	return nil, false
+}
+
+func (r *Tester) Enumerate(all bool, each func(string) bool) {
+
 }
