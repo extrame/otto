@@ -122,13 +122,23 @@ func (s *Script) GetFunction(n int) *FunctionLiteral {
 	if s.program.body == nil {
 		return nil
 	}
-	if len(s.program.functionList) <= n {
-		return nil
+	if s.program.functionList == nil || len(s.program.functionList) <= n {
+		if s.program.body[0] != nil && s.program.body[0].(*nodeVariableStatement) != nil {
+			var list = s.program.body[0].(*nodeVariableStatement).list
+			if len(list) > n && list[n].(*nodeVariableExpression) != nil {
+				var initializer = list[n].(*nodeVariableExpression).initializer
+				if initializer != nil && initializer.(*FunctionLiteral) != nil {
+					return initializer.(*FunctionLiteral)
+				}
+			}
+		} else {
+			return nil
+		}
 	}
-	if s.program.functionList[n] == nil {
-		return nil
+	if s.program.functionList[n] != nil {
+		return s.program.functionList[n]
 	}
-	return s.program.functionList[n]
+	return nil
 }
 
 // IsSingleFunctionDefinition returns true if the script is a single function definition.
@@ -139,12 +149,23 @@ func (s *Script) IsSingleFunctionDefinition() bool {
 	if s.program.body == nil {
 		return false
 	}
-	if len(s.program.functionList) != 1 {
-		return false
-	}
 	var node = s.program.body[0]
 	if _, ok := node.(*nodeEmptyStatement); !ok {
-		return false
+		if _, ok := node.(*nodeVariableStatement); !ok {
+			return false
+		}
+		var list = node.(*nodeVariableStatement).list
+		if len(list) != 1 {
+			return false
+		}
+		if _, ok := list[0].(*nodeVariableExpression); !ok {
+			return false
+		}
+		var initializer = list[0].(*nodeVariableExpression).initializer
+		if _, ok := initializer.(*FunctionLiteral); !ok {
+			return false
+		}
+		return true
 	}
 	if len(s.program.functionList) != 1 {
 		return false

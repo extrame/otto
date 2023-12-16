@@ -112,6 +112,21 @@ func TestCompileFunctionDefinition(t *testing.T) {
 	})
 }
 
+func TestCompileFunctionDefinition2(t *testing.T) {
+	tt(t, func() {
+		vm := New()
+		script, _ := vm.Compile("", `var foo = function() { return this.a; }`)
+		is(script.IsSingleFunctionDefinition(), true)
+		var fn = script.GetFunction(0)
+		vm.Set("obj", &Tester{
+			script: fn,
+		})
+		val, err := vm.Run(`obj.foo()`)
+		require.NoError(t, err)
+		is(val, 1)
+	})
+}
+
 type Tester struct {
 	script *FunctionLiteral
 }
