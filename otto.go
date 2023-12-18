@@ -223,6 +223,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/extrame/otto/file"
 	"github.com/extrame/otto/registry"
@@ -235,12 +236,14 @@ type Otto struct {
 	// See "Halting Problem" for more information.
 	Interrupt chan func()
 	runtime   *runtime
+	wg        *sync.WaitGroup
 }
 
 // New will allocate a new JavaScript runtime.
 func New() *Otto {
 	o := &Otto{
 		runtime: newContext(),
+		wg:      new(sync.WaitGroup),
 	}
 	o.runtime.otto = o
 	o.runtime.traceLimit = 10
@@ -255,6 +258,13 @@ func New() *Otto {
 	})
 
 	return o
+}
+
+// Context returns the current execution context of the vm, traversing up to
+// ten stack frames, and skipping any innermost native function stack frames.
+func (o *Otto) newRoutine() *sync.WaitGroup {
+	o.wg.Add(1)
+	return o.wg
 }
 
 func (o *Otto) clone() *Otto {
@@ -295,6 +305,7 @@ func (o Otto) Run(src interface{}) (Value, error) {
 	if !value.safe() {
 		value = Value{}
 	}
+	o.wg.Wait()
 	return value, err
 }
 
@@ -313,6 +324,7 @@ func (o Otto) Eval(src interface{}) (Value, error) {
 	if !value.safe() {
 		value = Value{}
 	}
+	o.wg.Wait()
 	return value, err
 }
 

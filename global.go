@@ -124,7 +124,20 @@ func (rt *runtime) newBoolean(value Value) *object {
 
 func (rt *runtime) newNumber(value Value) *object {
 	o := rt.newNumberObject(value)
-	o.prototype = rt.global.NumberPrototype
+	o.prototype = rt.global.PromisePrototype
+	return o
+}
+
+func (rt *runtime) newPromise(resolver Value) *object {
+
+	if !resolver.IsFunction() {
+		panic(rt.panicTypeError("Promise resolver %v is not a function", resolver))
+	}
+
+	var promise = &promise{}
+	promise.start(rt, resolver)
+	o := rt.newPromiseObject(promise)
+	o.prototype = rt.global.PromisePrototype
 	return o
 }
 

@@ -35,6 +35,7 @@ type global struct {
 	SyntaxError    *object
 	URIError       *object
 	JSON           *object
+	Promise        *object
 
 	ObjectPrototype         *object // Object.prototype
 	FunctionPrototype       *object // Function.prototype
@@ -45,6 +46,7 @@ type global struct {
 	DatePrototype           *object // Date.prototype
 	RegExpPrototype         *object // RegExp.prototype
 	ErrorPrototype          *object // Error.prototype
+	PromisePrototype        *object // Error.prototype
 	EvalErrorPrototype      *object
 	TypeErrorPrototype      *object
 	RangeErrorPrototype     *object

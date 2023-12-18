@@ -6479,6 +6479,76 @@ func (rt *runtime) newContext() {
 		},
 	}
 
+	// Number prototype.
+	rt.global.PromisePrototype = &object{
+		runtime:     rt,
+		class:       classPromiseName,
+		objectClass: classObject,
+		prototype:   rt.global.ObjectPrototype,
+		property: map[string]property{
+			"then": {
+				mode: 0o101,
+				value: Value{
+					kind: valueObject,
+					value: &object{
+						runtime:     rt,
+						class:       classFunctionName,
+						objectClass: classObject,
+						prototype:   rt.global.FunctionPrototype,
+						extensible:  true,
+						property: map[string]property{
+							propertyLength: {
+								mode: 0,
+								value: Value{
+									kind:  valueNumber,
+									value: 0,
+								},
+							},
+							propertyName: {
+								mode: 0,
+								value: Value{
+									kind:  valueString,
+									value: "toString",
+								},
+							},
+						},
+						propertyOrder: []string{
+							propertyLength,
+							propertyName,
+						},
+						value: nativeFunctionObject{
+							name: methodToString,
+							call: builtinPromiseThen,
+						},
+					},
+				},
+			},
+					
+		},
+		propertyOrder: []string{
+			"then",
+		},
+	}
+
+	rt.global.Promise = &object{
+		runtime:     rt,
+		class:       classFunctionName,
+		objectClass: classPromise,
+		prototype:   rt.global.ObjectPrototype,
+		extensible:  true,
+		value: nativeFunctionObject{
+			name:      classPromiseName,
+			call:      func(fc FunctionCall) Value {
+				panic(newError(nil, "TypeError", 0, "Promise constructor cannot be invoked without 'new'"))
+			},
+			construct: builtinNewPromise,
+		},
+		propertyOrder: []string{
+
+		},
+	}
+
+
 	// Date constructor definition.
 	rt.global.DatePrototype.property[propertyConstructor] = property{
 		mode: 0o101,
@@ -8020,6 +8090,13 @@ func (rt *runtime) newContext() {
 			value: Value{
 				kind:  valueObject,
 				value: rt.global.Number,
+			},
+		},
+		classPromiseName: {
+			mode: 0o101,
+			value: Value{
+				kind:  valueObject,
+				value: rt.global.Promise,
 			},
 		},
 		classMathName: {

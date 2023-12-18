@@ -14,6 +14,7 @@ const (
 	classBooleanName  = "Boolean"
 	classMathName     = "Math"
 	classJSONName     = "JSON"
+	classPromiseName  = "Promise"
 
 	// Error classes.
 	classErrorName          = "Error"
@@ -27,6 +28,9 @@ const (
 	// Common properties.
 	propertyName        = "name"
 	propertyLength      = "length"
+	propertyThen        = "then"
+	propertyCatch       = "catch"
+	propertyFinally     = "finally"
 	propertyPrototype   = "prototype"
 	propertyConstructor = "constructor"
 

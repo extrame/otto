@@ -542,7 +542,7 @@ func (p *parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 		p.read()
 		p.next()
 		if isAnonymousMarker {
-			p.parseAnonymousFunction(idx)
+			left = p.parseAnonymousFunction(idx)
 		} else {
 			if p.mode&StoreComments != 0 {
 				p.comments.MarkComments(ast.LEADING)

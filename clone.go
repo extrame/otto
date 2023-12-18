@@ -52,6 +52,7 @@ func (rt *runtime) clone() *runtime {
 		c.object(rt.global.SyntaxError),
 		c.object(rt.global.URIError),
 		c.object(rt.global.JSON),
+		c.object(rt.global.Promise),
 
 		c.object(rt.global.ObjectPrototype),
 		c.object(rt.global.FunctionPrototype),
@@ -62,6 +63,7 @@ func (rt *runtime) clone() *runtime {
 		c.object(rt.global.DatePrototype),
 		c.object(rt.global.RegExpPrototype),
 		c.object(rt.global.ErrorPrototype),
+		c.object(rt.global.PromisePrototype),
 		c.object(rt.global.EvalErrorPrototype),
 		c.object(rt.global.TypeErrorPrototype),
 		c.object(rt.global.RangeErrorPrototype),

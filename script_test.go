@@ -121,7 +121,7 @@ func TestCompileFunctionDefinition2(t *testing.T) {
 		vm.Set("obj", &Tester{
 			script: fn,
 		})
-		val, err := vm.Run(`obj.foo()`)
+		val, err := vm.Run(`obj.foo({"name":1})`)
 		require.NoError(t, err)
 		is(val, 1)
 	})
