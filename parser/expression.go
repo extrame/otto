@@ -41,6 +41,9 @@ func (p *parser) parsePrimaryExpression() ast.Expression {
 				}
 			}
 		}
+		if p.token == token.ANNOYMOUS_FUNCTION_MARKKER {
+			return p.parseAnonymousFunction(idx, literal)
+		}
 		return &ast.Identifier{
 			Name: literal,
 			Idx:  idx,

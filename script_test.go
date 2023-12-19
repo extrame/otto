@@ -127,6 +127,38 @@ func TestCompileFunctionDefinition2(t *testing.T) {
 	})
 }
 
+func TestCompileFunctionDefinition3(t *testing.T) {
+	tt(t, func() {
+		vm := New()
+		script, err := vm.Compile("", `function validateLogin(username, password) {
+			return new Promise((resolve, reject) => {
+			  db.user.where({ username: username, password: password })
+				.get()
+				.then(user => {
+				  if (user) {
+					resolve({ success: true });
+				  } else {
+					resolve({ success: false, message: '用户名或密码错误' });
+				  }
+				})
+				.catch(error => {
+				  reject(error);
+				});
+			});
+		  }`)
+		require.NoError(t, err)
+
+		is(script.IsSingleFunctionDefinition(), true)
+		var fn = script.GetFunction(0)
+		vm.Set("obj", &Tester{
+			script: fn,
+		})
+		val, err := vm.Run(`obj.foo({"name":1})`)
+		require.NoError(t, err)
+		is(val, 1)
+	})
+}
+
 type Tester struct {
 	script *FunctionLiteral
 }

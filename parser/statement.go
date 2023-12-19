@@ -289,13 +289,26 @@ func (p *parser) parseFunction(declaration bool) *ast.FunctionLiteral {
 	return node
 }
 
-func (p *parser) parseAnonymousFunction(idx file.Idx) *ast.FunctionLiteral {
+func (p *parser) parseAnonymousFunction(idx file.Idx, args ...string) *ast.FunctionLiteral {
 	node := &ast.FunctionLiteral{
 		Function: idx,
 	}
 
 	// node.Name = name
-	node.ParameterList = p.parseFunctionParameterList(idx)
+	if len(args) == 0 {
+		node.ParameterList = p.parseFunctionParameterList(idx)
+	} else {
+		node.ParameterList = &ast.ParameterList{
+			Opening: idx,
+			List: []*ast.Identifier{
+				{
+					Name: args[0],
+					Idx:  idx,
+				},
+			},
+			Closing: idx,
+		}
+	}
 	p.next()
 	p.parseFunctionBlock(node)
 	node.Source = p.slice(node.Idx0(), node.Idx1())
