@@ -1,7 +1,6 @@
 package otto
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -18,6 +17,7 @@ func AddTimerToOtto(vm *Otto) error {
 	ready := make(chan *_timer)
 
 	newTimer := func(call FunctionCall, interval bool) (*_timer, Value) {
+		wg := vm.newRoutine()
 		delay, _ := call.Argument(1).ToInteger()
 		if 0 >= delay {
 			delay = 1
@@ -31,6 +31,7 @@ func AddTimerToOtto(vm *Otto) error {
 		registry[timer] = timer
 
 		timer.timer = time.AfterFunc(timer.duration, func() {
+			wg.Done()
 			ready <- timer
 		})
 
@@ -40,7 +41,6 @@ func AddTimerToOtto(vm *Otto) error {
 	}
 
 	setTimeout := func(call FunctionCall) Value {
-		fmt.Println("setTimeout")
 		_, value := newTimer(call, false)
 		return value
 	}
@@ -64,7 +64,7 @@ func AddTimerToOtto(vm *Otto) error {
 	vm.Set("clearInterval", clearTimeout)
 
 	go func() {
-		wg := vm.newRoutine()
+
 		for {
 			select {
 			case timer := <-ready:
@@ -100,7 +100,6 @@ func AddTimerToOtto(vm *Otto) error {
 				break
 			}
 		}
-		wg.Done()
 	}()
 
 	return nil

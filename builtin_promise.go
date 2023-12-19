@@ -18,3 +18,13 @@ func builtinPromiseThen(call FunctionCall) Value {
 	}
 	return p.callThen(call.runtime, call.This, arg)
 }
+
+func builtinPromiseCatch(call FunctionCall) Value {
+	thisObject := call.thisObject()
+	var p = thisObject.value.(*promise)
+	var arg = call.Argument(0)
+	if !arg.IsFunction() {
+		panic(call.runtime.panicTypeError("Promise.catch() requires a function argument"))
+	}
+	return p.callCatch(call.runtime, call.This, arg)
+}

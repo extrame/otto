@@ -124,3 +124,22 @@ func TestPromiseNewWithFuncThen3(t *testing.T) {
 		require.EqualError(t, err, "TypeError: Promise resolver 1 is not a function")
 	})
 }
+
+func TestPromiseNewWithFuncThen4(t *testing.T) {
+	tt(t, func() {
+		vm := New()
+		AddTimerToOtto(vm)
+		script, err := vm.Compile("", `var p = new Promise((resolve, reject) => {
+			console.log(0);
+			  resolve(1);
+		}).then(() => {
+			console.log(1);
+			throw new Error("error");
+		  }).then(()=>{console.log(4);}).catch((e)=>{console.log(5);});
+		  console.log(p);
+		`)
+		require.NoError(t, err)
+		_, err = vm.Run(script)
+		require.EqualError(t, err, "TypeError: Promise resolver 1 is not a function")
+	})
+}
