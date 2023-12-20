@@ -130,12 +130,13 @@ func (rt *runtime) newNumber(value Value) *object {
 
 func (rt *runtime) newPromise(resolver Value) *object {
 
-	if !resolver.IsFunction() {
-		panic(rt.panicTypeError("Promise resolver %v is not a function", resolver))
+	var promise = &promise{}
+	if resolver.IsFunction() {
+		promise.start(rt, resolver)
+	} else {
+		promise.resolveBy(rt, resolver)
 	}
 
-	var promise = &promise{}
-	promise.start(rt, resolver)
 	o := rt.newPromiseObject(promise)
 	o.prototype = rt.global.PromisePrototype
 	return o

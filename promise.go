@@ -43,6 +43,10 @@ func (p *promise) start(rt *runtime, resolver Value) {
 	resolver.call(rt, UndefinedValue(), p.resolveFn, p.rejectFn)
 }
 
+func (p *promise) resolveBy(rt *runtime, result Value) {
+	p.updateStatue(promiseFulfilled, result)
+}
+
 func (p *promise) updateStatue(status promiseStatus, arguments ...interface{}) {
 	p.status = status
 	if status == promiseFulfilled {

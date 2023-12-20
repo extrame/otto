@@ -638,6 +638,15 @@ func (o Otto) ToValue(value interface{}) (Value, error) {
 	return o.runtime.safeToValue(value)
 }
 
+func (o Otto) ToPromiseResolved(value interface{}) (Value, error) {
+	result, err := o.runtime.safeToValue(value)
+	if err == nil {
+		var promise = o.runtime.newPromise(result)
+		return o.runtime.safeToValue(promise)
+	}
+	return result, err
+}
+
 // Copy will create a copy/clone of the runtime.
 //
 // Copy is useful for saving some time when creating many similar runtimes.
