@@ -143,3 +143,31 @@ func TestPromiseNewWithFuncThen4(t *testing.T) {
 		require.EqualError(t, err, "TypeError: Promise resolver 1 is not a function")
 	})
 }
+
+func TestPromiseEffectedCalculator(t *testing.T) {
+	tt(t, func() {
+		vm := New()
+		AddTimerToOtto(vm)
+		_, err := vm.Compile("", `
+		console.log( (1+2)*3);
+		`)
+		require.NoError(t, err)
+	})
+}
+
+func TestPromiseEffectedFunction(t *testing.T) {
+	tt(t, func() {
+		vm := New()
+		AddTimerToOtto(vm)
+		script, err := vm.Compile("", `
+		var fn = function(num){
+			console.log(num);
+		}
+		console.log(fn);
+		fn(2);
+		`)
+		require.NoError(t, err)
+		_, err = vm.Run(script)
+		require.EqualError(t, err, "TypeError: Cannot convert function to object")
+	})
+}

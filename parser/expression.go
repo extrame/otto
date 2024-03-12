@@ -543,10 +543,11 @@ func (p *parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 		p.chrOffset = lastChrOffset
 		p.offset = chrOffset
 		p.read()
-		p.next()
 		if isAnonymousMarker {
+			p.next()
 			left = p.parseAnonymousFunction(idx)
 		} else {
+			p.token = token.LEFT_PARENTHESIS
 			if p.mode&StoreComments != 0 {
 				p.comments.MarkComments(ast.LEADING)
 				p.comments.MarkPrimary()
