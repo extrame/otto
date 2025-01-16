@@ -380,6 +380,25 @@ func TestString_toCase(t *testing.T) {
 	})
 }
 
+func TestString_pad(t *testing.T) {
+	tt(t, func() {
+		test, _ := test()
+
+		test(`"1".padStart()`, "1")
+		test(`"1".padStart(2)`, " 1")
+		test(`"1".padStart(3)`, "  1")
+		test(`"1".padStart(4)`, "   1")
+		test(`"1".padStart(2,"0")`, "01")
+		test(`"1".padStart(3,"0")`, "001")
+		test(`"1".padEnd()`, "1")
+		test(`"1".padEnd(2)`, "1 ")
+		test(`"1".padEnd(3)`, "1  ")
+		test(`"1".padEnd(4)`, "1   ")
+		test(`"1".padEnd(2,"0")`, "10")
+		test(`"1".padEnd(3,"0")`, "100")
+	})
+}
+
 func Test_floatToString(t *testing.T) {
 	tt(t, func() {
 		test, _ := test()

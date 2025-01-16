@@ -495,3 +495,48 @@ func builtinStringToLocaleLowerCase(call FunctionCall) Value {
 func builtinStringToLocaleUpperCase(call FunctionCall) Value {
 	return builtinStringToUpperCase(call)
 }
+func builtinStringPadStart(call FunctionCall) Value {
+	checkObjectCoercible(call.runtime, call.This)
+	target := []rune(call.This.string())
+
+	length := int(call.Argument(0).number().int64)
+	var padding string
+	if call.Argument(1).IsUndefined() {
+		padding = " "
+	} else {
+		padding = call.Argument(1).string()
+	}
+
+	if length <= len(target) {
+		return stringValue(string(target))
+	}
+
+	for len(padding) < length-len(target) {
+		padding += padding
+	}
+
+	return stringValue(padding[0:length-len(target)] + string(target))
+}
+
+func builtinStringPadEnd(call FunctionCall) Value {
+	checkObjectCoercible(call.runtime, call.This)
+	target := []rune(call.This.string())
+
+	length := int(call.Argument(0).number().int64)
+	var padding string
+	if call.Argument(1).IsUndefined() {
+		padding = " "
+	} else {
+		padding = call.Argument(1).string()
+	}
+
+	if length <= len(target) {
+		return stringValue(string(target))
+	}
+
+	for len(padding) < length-len(target) {
+		padding += padding
+	}
+
+	return stringValue(string(target) + padding[0:length-len(target)])
+}

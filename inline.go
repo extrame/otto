@@ -2743,6 +2743,80 @@ func (rt *runtime) newContext() {
 					},
 				},
 			},
+			"padStart": {
+				mode: 0o101,
+				value: Value{
+					kind: valueObject,
+					value: &object{
+						runtime:     rt,
+						class:       classFunctionName,
+						objectClass: classObject,
+						prototype:   rt.global.FunctionPrototype,
+						extensible:  true,
+						property: map[string]property{
+							propertyLength: {
+								mode: 0,
+								value: Value{
+									kind:  valueNumber,
+									value: 0,
+								},
+							},
+							propertyName: {
+								mode: 0,
+								value: Value{
+									kind:  valueString,
+									value: "padStart",
+								},
+							},
+						},
+						propertyOrder: []string{
+							propertyLength,
+							propertyName,
+						},
+						value: nativeFunctionObject{
+							name: "padStart",
+							call: builtinStringPadStart,
+						},
+					},
+				},
+			},
+			"padEnd": {
+				mode: 0o101,
+				value: Value{
+					kind: valueObject,
+					value: &object{
+						runtime:     rt,
+						class:       classFunctionName,
+						objectClass: classObject,
+						prototype:   rt.global.FunctionPrototype,
+						extensible:  true,
+						property: map[string]property{
+							propertyLength: {
+								mode: 0,
+								value: Value{
+									kind:  valueNumber,
+									value: 0,
+								},
+							},
+							propertyName: {
+								mode: 0,
+								value: Value{
+									kind:  valueString,
+									value: "padEnd",
+								},
+							},
+						},
+						propertyOrder: []string{
+							propertyLength,
+							propertyName,
+						},
+						value: nativeFunctionObject{
+							name: "padEnd",
+							call: builtinStringPadEnd,
+						},
+					},
+				},
+			},
 		},
 		propertyOrder: []string{
 			propertyLength,
@@ -2769,6 +2843,8 @@ func (rt *runtime) newContext() {
 			"toLowerCase",
 			"toUpperCase",
 			"valueOf",
+			"padStart",
+			"padEnd",
 		},
 	}
 
