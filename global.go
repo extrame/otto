@@ -124,7 +124,7 @@ func (rt *runtime) newBoolean(value Value) *object {
 
 func (rt *runtime) newNumber(value Value) *object {
 	o := rt.newNumberObject(value)
-	o.prototype = rt.global.PromisePrototype
+	o.prototype = rt.global.NumberPrototype
 	return o
 }
 
