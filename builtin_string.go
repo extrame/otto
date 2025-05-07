@@ -488,6 +488,38 @@ func builtinStringLocaleCompare(call FunctionCall) Value {
 	return intValue(1)
 }
 
+func builtinStringStartsWith(call FunctionCall) Value {
+	checkObjectCoercible(call.runtime, call.This)
+	target := []rune(call.This.string())
+	searchString := []rune(call.Argument(0).string())
+
+	if len(searchString) == 0 {
+		return trueValue
+	}
+
+	if strings.HasPrefix(string(target), string(searchString)) {
+		return trueValue
+	}
+
+	return falseValue
+}
+
+func builtinStringEndsWith(call FunctionCall) Value {
+	checkObjectCoercible(call.runtime, call.This)
+	target := []rune(call.This.string())
+	searchString := []rune(call.Argument(0).string())
+
+	if len(searchString) == 0 {
+		return trueValue
+	}
+
+	if strings.HasSuffix(string(target), string(searchString)) {
+		return trueValue
+	}
+
+	return falseValue
+}
+
 func builtinStringToLocaleLowerCase(call FunctionCall) Value {
 	return builtinStringToLowerCase(call)
 }
